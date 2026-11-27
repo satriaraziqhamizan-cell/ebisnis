@@ -1,0 +1,707 @@
+import {
+  AppData,
+  Barang,
+  Pemasukan,
+  Pengaturan,
+  Pengeluaran,
+  PergerakanStok,
+  Transaksi,
+} from '../types/pos';
+import { geserTanggal, getTanggalWIB } from '../utils/format';
+
+// QRIS Contoh (SVG lokal beresolusi tajam sebagai gambar awal sebelum pemilik mengunggah QRIS asli toko)
+export const DEMO_QRIS_SVG_DATA_URL = (() => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" width="280" height="280">
+  <rect width="280" height="280" fill="#ffffff"/>
+  <rect x="16" y="16" width="248" height="248" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="30" y="30" width="60" height="60" rx="6" fill="#0f172a"/>
+  <rect x="38" y="38" width="44" height="44" rx="3" fill="#ffffff"/>
+  <rect x="46" y="46" width="28" height="28" rx="2" fill="#0f172a"/>
+  <rect x="190" y="30" width="60" height="60" rx="6" fill="#0f172a"/>
+  <rect x="198" y="38" width="44" height="44" rx="3" fill="#ffffff"/>
+  <rect x="206" y="46" width="28" height="28" rx="2" fill="#0f172a"/>
+  <rect x="30" y="190" width="60" height="60" rx="6" fill="#0f172a"/>
+  <rect x="38" y="198" width="44" height="44" rx="3" fill="#ffffff"/>
+  <rect x="46" y="206" width="28" height="28" rx="2" fill="#0f172a"/>
+  <g fill="#0f172a">
+    <rect x="104" y="34" width="12" height="12"/><rect x="128" y="34" width="12" height="12"/><rect x="152" y="34" width="24" height="12"/>
+    <rect x="104" y="54" width="24" height="12"/><rect x="140" y="54" width="12" height="24"/><rect x="164" y="54" width="12" height="12"/>
+    <rect x="104" y="78" width="12" height="12"/><rect x="128" y="78" width="36" height="12"/>
+    <rect x="34" y="104" width="12" height="24"/><rect x="58" y="104" width="24" height="12"/><rect x="94" y="104" width="12" height="12"/>
+    <rect x="120" y="104" width="40" height="40" rx="6" fill="#15803d"/>
+    <rect x="128" y="112" width="24" height="24" rx="3" fill="#ffffff"/>
+    <rect x="134" y="118" width="12" height="12" fill="#15803d"/>
+    <rect x="172" y="104" width="24" height="12"/><rect x="208" y="104" width="12" height="36"/><rect x="232" y="104" width="12" height="12"/>
+    <rect x="34" y="140" width="36" height="12"/><rect x="82" y="128" width="24" height="12"/><rect x="172" y="128" width="12" height="24"/>
+    <rect x="196" y="140" width="36" height="12"/><rect x="46" y="164" width="24" height="12"/><rect x="82" y="152" width="12" height="24"/>
+    <rect x="106" y="156" width="24" height="12"/><rect x="142" y="156" width="36" height="12"/><rect x="190" y="164" width="24" height="12"/><rect x="226" y="152" width="18" height="24"/>
+    <rect x="104" y="190" width="12" height="24"/><rect x="128" y="190" width="24" height="12"/><rect x="164" y="190" width="12" height="36"/>
+    <rect x="190" y="190" width="36" height="12"/><rect x="238" y="190" width="12" height="24"/>
+    <rect x="104" y="226" width="36" height="12"/><rect x="152" y="214" width="24" height="24"/><rect x="190" y="214" width="12" height="24"/>
+    <rect x="214" y="214" width="36" height="12"/><rect x="214" y="238" width="24" height="12"/>
+  </g>
+</svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+})();
+
+export function buatPengaturanDefault(): Pengaturan {
+  return {
+    profil_usaha: {
+      nama_toko: 'Toko Kelontong Nek Upik',
+      alamat: 'Jl. H. Ali Hamzah No. 2, Payo Lebar, Kec. Jelutung, Kota Jambi',
+      telepon: '0812-7400-1988',
+      pesan_struk: 'Terima kasih sudah berbelanja di Toko Nek Upik. Semoga sehat & lancar rezeki.',
+    },
+    gambar_qris: DEMO_QRIS_SVG_DATA_URL,
+    nama_merchant_qris: 'TOKO KELONTONG NEK UPIK - JAMBI',
+    pin_pengguna: {
+      pemilik: '1234',
+      kasir: '2222',
+      pengadaan: '3333',
+    },
+    ukuran_huruf: 'normal',
+    mode_gelap: false,
+    tanggal_backup_terakhir: undefined,
+    adalah_data_contoh: true,
+  };
+}
+
+export function buatDataContoh(): AppData {
+  const hariIni = getTanggalWIB();
+  const buatWaktu = (deltaHari: number, jam: string) => {
+    const tgl = geserTanggal(hariIni, deltaHari);
+    return `${tgl}T${jam}:00+07:00`;
+  };
+
+  const dibuatAwal = buatWaktu(-10, '07:00');
+
+  // 32 barang realistis Toko Kelontong Nek Upik (campuran kuliner rumahan & kelontong)
+  const barang: Barang[] = [
+    {
+      id: 'brg-01',
+      nama: 'Gado-gado Nek Upik',
+      kategori: 'Makanan Berat',
+      harga_jual: 15000,
+      harga_beli: 8500,
+      stok: 0,
+      satuan: 'porsi',
+      stok_minimum: 0,
+      lacak_stok: false,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-02',
+      nama: 'Lontong Sayur Komplit',
+      kategori: 'Makanan Berat',
+      harga_jual: 12000,
+      harga_beli: 6500,
+      stok: 0,
+      satuan: 'porsi',
+      stok_minimum: 0,
+      lacak_stok: false,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-03',
+      nama: 'Es Teh Manis Kemasan',
+      kategori: 'Minuman Kemasan',
+      harga_jual: 4000,
+      harga_beli: 2500,
+      stok: 28,
+      satuan: 'botol',
+      stok_minimum: 8,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-04',
+      nama: 'Air Mineral Botol 600ml',
+      kategori: 'Minuman Kemasan',
+      harga_jual: 4000,
+      harga_beli: 2600,
+      stok: 24,
+      satuan: 'botol',
+      stok_minimum: 10,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-05',
+      nama: 'Teh Botol Kotak 250ml',
+      kategori: 'Minuman Kemasan',
+      harga_jual: 5000,
+      harga_beli: 3400,
+      stok: 6,
+      satuan: 'pcs',
+      stok_minimum: 8,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-06',
+      nama: 'Air Galon Isi Ulang',
+      kategori: 'Kebutuhan Harian Lain',
+      harga_jual: 6000,
+      harga_beli: 3000,
+      stok: 11,
+      satuan: 'galon',
+      stok_minimum: 5,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-07',
+      nama: 'Kopi Sachet Kapal Api',
+      kategori: 'Minuman Kemasan',
+      harga_jual: 2000,
+      harga_beli: 1400,
+      stok: 42,
+      satuan: 'sachet',
+      stok_minimum: 12,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-08',
+      nama: 'Susu Kental Manis Sachet',
+      kategori: 'Minuman Kemasan',
+      harga_jual: 2500,
+      harga_beli: 1800,
+      stok: 5,
+      satuan: 'sachet',
+      stok_minimum: 10,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-09',
+      nama: 'Keripik Kentang Balado',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 5000,
+      harga_beli: 3800,
+      stok: 14,
+      satuan: 'bungkus',
+      stok_minimum: 5,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-10',
+      nama: 'Kerupuk Palembang Kemplang',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 3000,
+      harga_beli: 2000,
+      stok: 18,
+      satuan: 'bungkus',
+      stok_minimum: 6,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-11',
+      nama: 'Permen Mint Bungkus Kecil',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 1000,
+      harga_beli: 700,
+      stok: 35,
+      satuan: 'bungkus',
+      stok_minimum: 10,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-12',
+      nama: 'Wafer Coklat 50g',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 2500,
+      harga_beli: 1800,
+      stok: 16,
+      satuan: 'bungkus',
+      stok_minimum: 6,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-13',
+      nama: 'Biskuit Kelapa',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 9000,
+      harga_beli: 7200,
+      stok: 9,
+      satuan: 'bungkus',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-14',
+      nama: 'Kacang Atom Gurih',
+      kategori: 'Jajanan & Makanan Ringan',
+      harga_jual: 2000,
+      harga_beli: 1400,
+      stok: 22,
+      satuan: 'bungkus',
+      stok_minimum: 8,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-15',
+      nama: 'Mie Instan Goreng',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 3500,
+      harga_beli: 2850,
+      stok: 36,
+      satuan: 'bungkus',
+      stok_minimum: 12,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-16',
+      nama: 'Mie Instan Kuah Soto',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 3500,
+      harga_beli: 2850,
+      stok: 4,
+      satuan: 'bungkus',
+      stok_minimum: 10,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-17',
+      nama: 'Telur Ayam Ras',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 2500,
+      harga_beli: 2000,
+      stok: 45,
+      satuan: 'butir',
+      stok_minimum: 15,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-18',
+      nama: 'Beras Medium 1 kg',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 15000,
+      harga_beli: 13200,
+      stok: 14,
+      satuan: 'kg',
+      stok_minimum: 5,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-19',
+      nama: 'Gula Pasir Putih 1 kg',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 17500,
+      harga_beli: 15500,
+      stok: 3,
+      satuan: 'kg',
+      stok_minimum: 5,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-20',
+      nama: 'Minyak Goreng Kemasan 1L',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 18000,
+      harga_beli: 15800,
+      stok: 10,
+      satuan: 'liter',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-21',
+      nama: 'Kangkung Segar',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 3000,
+      harga_beli: 1800,
+      stok: 8,
+      satuan: 'ikat',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-22',
+      nama: 'Bayam Hijau',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 3000,
+      harga_beli: 1800,
+      stok: 6,
+      satuan: 'ikat',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-23',
+      nama: 'Cabai Merah Keriting 1 Ons',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 6000,
+      harga_beli: 4500,
+      stok: 7,
+      satuan: 'ons',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-24',
+      nama: 'Bawang Merah 1 Ons',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 5000,
+      harga_beli: 3800,
+      stok: 9,
+      satuan: 'ons',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-25',
+      nama: 'Tahu Putih Segar',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 1500,
+      harga_beli: 1000,
+      stok: 20,
+      satuan: 'pcs',
+      stok_minimum: 6,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-26',
+      nama: 'Tempe Papan Sedang',
+      kategori: 'Sayur & Bahan Makanan',
+      harga_jual: 5000,
+      harga_beli: 3500,
+      stok: 2,
+      satuan: 'pcs',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-27',
+      nama: 'Sabun Cuci Piring 200ml',
+      kategori: 'Kebutuhan Rumah Tangga',
+      harga_jual: 5000,
+      harga_beli: 3800,
+      stok: 11,
+      satuan: 'bungkus',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-28',
+      nama: 'Sabun Mandi Batang',
+      kategori: 'Kebutuhan Rumah Tangga',
+      harga_jual: 4500,
+      harga_beli: 3400,
+      stok: 13,
+      satuan: 'pcs',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-29',
+      nama: 'Sampo Sachet Renceng',
+      kategori: 'Kebutuhan Rumah Tangga',
+      harga_jual: 1000,
+      harga_beli: 750,
+      stok: 0,
+      satuan: 'sachet',
+      stok_minimum: 12,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-30',
+      nama: 'Pasta Gigi 75g',
+      kategori: 'Kebutuhan Rumah Tangga',
+      harga_jual: 7500,
+      harga_beli: 5800,
+      stok: 8,
+      satuan: 'pcs',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-31',
+      nama: 'Deterjen Bubuk Sachet',
+      kategori: 'Kebutuhan Rumah Tangga',
+      harga_jual: 2000,
+      harga_beli: 1450,
+      stok: 25,
+      satuan: 'sachet',
+      stok_minimum: 10,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-32',
+      nama: 'Korek Api Gas',
+      kategori: 'Kebutuhan Harian Lain',
+      harga_jual: 3000,
+      harga_beli: 1900,
+      stok: 12,
+      satuan: 'pcs',
+      stok_minimum: 4,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+    {
+      id: 'brg-33',
+      nama: 'Plastik Kresek Hitam Pak',
+      kategori: 'Kebutuhan Harian Lain',
+      harga_jual: 5000,
+      harga_beli: 3500,
+      stok: 7,
+      satuan: 'bungkus',
+      stok_minimum: 3,
+      lacak_stok: true,
+      aktif: true,
+      dibuat_pada: dibuatAwal,
+    },
+  ];
+
+  // 14 transaksi contoh selama 7 hari terakhir (konsisten dengan pemasukan)
+  const daftarSeedTrx: Array<{
+    delta: number;
+    jam: string;
+    urut: string;
+    metode: 'TUNAI' | 'QRIS';
+    kasir: string;
+    diskon?: number;
+    uangDiterima?: number;
+    catatan?: string;
+    items: Array<{ id: string; qty: number }>;
+  }> = [
+    { delta: -6, jam: '08:40', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, items: [{ id: 'brg-01', qty: 2 }, { id: 'brg-03', qty: 2 }] },
+    { delta: -6, jam: '11:15', urut: '0002', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-18', qty: 1 }, { id: 'brg-17', qty: 6 }] },
+    { delta: -5, jam: '09:30', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, items: [{ id: 'brg-20', qty: 1 }, { id: 'brg-15', qty: 4 }, { id: 'brg-06', qty: 1 }] },
+    { delta: -5, jam: '13:20', urut: '0002', metode: 'TUNAI', kasir: 'Nek Upik', uangDiterima: 20000, items: [{ id: 'brg-01', qty: 1 }, { id: 'brg-10', qty: 1 }] },
+    { delta: -4, jam: '10:05', urut: '0001', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-01', qty: 3 }, { id: 'brg-04', qty: 3 }] },
+    { delta: -4, jam: '16:40', urut: '0002', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, items: [{ id: 'brg-19', qty: 1 }, { id: 'brg-07', qty: 5 }, { id: 'brg-27', qty: 2 }] },
+    { delta: -3, jam: '08:50', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 30000, items: [{ id: 'brg-21', qty: 2 }, { id: 'brg-25', qty: 4 }, { id: 'brg-26', qty: 2 }, { id: 'brg-23', qty: 1 }] },
+    { delta: -3, jam: '12:45', urut: '0002', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-01', qty: 2 }, { id: 'brg-02', qty: 1 }, { id: 'brg-03', qty: 2 }] },
+    { delta: -2, jam: '09:15', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, items: [{ id: 'brg-18', qty: 2 }, { id: 'brg-15', qty: 3 }] },
+    { delta: -2, jam: '15:10', urut: '0002', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-09', qty: 3 }, { id: 'brg-05', qty: 2 }, { id: 'brg-11', qty: 5 }] },
+    { delta: -1, jam: '09:40', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, items: [{ id: 'brg-01', qty: 2 }, { id: 'brg-03', qty: 2 }, { id: 'brg-10', qty: 2 }] },
+    { delta: -1, jam: '14:25', urut: '0002', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-20', qty: 1 }, { id: 'brg-28', qty: 2 }, { id: 'brg-30', qty: 1 }] },
+    { delta: 0, jam: '08:25', urut: '0001', metode: 'TUNAI', kasir: 'Tante Meli', uangDiterima: 50000, catatan: 'Ibu Rina RT 04', items: [{ id: 'brg-01', qty: 2 }, { id: 'brg-03', qty: 2 }, { id: 'brg-17', qty: 4 }] },
+    { delta: 0, jam: '10:35', urut: '0002', metode: 'QRIS', kasir: 'Tante Meli', items: [{ id: 'brg-06', qty: 2 }, { id: 'brg-15', qty: 4 }, { id: 'brg-04', qty: 2 }] },
+  ];
+
+  const petaBarang = new Map(barang.map((b) => [b.id, b]));
+  const transaksi: Transaksi[] = [];
+  const pemasukan: Pemasukan[] = [];
+
+  daftarSeedTrx.forEach((seed, idx) => {
+    const tgl = geserTanggal(hariIni, seed.delta);
+    const kompak = tgl.replace(/-/g, '');
+    const waktu = buatWaktu(seed.delta, seed.jam);
+    const item = seed.items.map((it) => {
+      const b = petaBarang.get(it.id)!;
+      return {
+        barang_id: b.id,
+        nama: b.nama,
+        harga: b.harga_jual,
+        satuan: b.satuan,
+        jumlah: it.qty,
+        subtotal: b.harga_jual * it.qty,
+      };
+    });
+    const subtotal = item.reduce((acc, it) => acc + it.subtotal, 0);
+    const diskon = seed.diskon ?? 0;
+    const total = Math.max(0, subtotal - diskon);
+    const uangDiterima = seed.metode === 'QRIS' ? total : Math.max(total, seed.uangDiterima ?? total);
+    const kembalian = uangDiterima - total;
+    const trxId = `trx-seed-${idx + 1}`;
+    const nomor = `TRX-${kompak}-${seed.urut}`;
+
+    transaksi.push({
+      id: trxId,
+      nomor,
+      tanggal_waktu: waktu,
+      item,
+      subtotal,
+      diskon,
+      total,
+      metode: seed.metode,
+      uang_diterima: uangDiterima,
+      kembalian,
+      catatan: seed.catatan ?? '',
+      status: 'SELESAI',
+      kasir: seed.kasir,
+    });
+
+    pemasukan.push({
+      id: `msk-seed-${idx + 1}`,
+      tanggal: tgl,
+      waktu,
+      jumlah: total,
+      sumber: 'PENJUALAN',
+      keterangan: `Penjualan ${nomor}`,
+      metode: seed.metode,
+      status: 'AKTIF',
+      transaksi_id: trxId,
+      dicatat_oleh: seed.kasir,
+    });
+  });
+
+  // 1 pemasukan manual contoh
+  pemasukan.push({
+    id: 'msk-seed-manual-1',
+    tanggal: geserTanggal(hariIni, -2),
+    waktu: buatWaktu(-2, '17:00'),
+    jumlah: 45000,
+    sumber: 'MANUAL',
+    keterangan: 'Titipan jual gorengan tetangga (bagi hasil)',
+    metode: 'TUNAI',
+    status: 'AKTIF',
+    dicatat_oleh: 'Nek Upik',
+  });
+
+  // Pengeluaran contoh
+  const pengeluaran: Pengeluaran[] = [
+    {
+      id: 'klr-seed-1',
+      tanggal: geserTanggal(hariIni, -4),
+      waktu: buatWaktu(-4, '07:30'),
+      jumlah: 145000,
+      kategori: 'Bahan Gado-gado',
+      keterangan: 'Kacang tanah, lontong, tauge, mentimun, dan kerupuk',
+      dicatat_oleh: 'Nek Upik',
+    },
+    {
+      id: 'klr-seed-2',
+      tanggal: geserTanggal(hariIni, -3),
+      waktu: buatWaktu(-3, '11:00'),
+      jumlah: 114000,
+      kategori: 'Belanja Barang/Stok',
+      keterangan: 'Kulakan Mie Instan Goreng 1 dus (40 bungkus)',
+      dicatat_oleh: 'Satri',
+      terkait_stok: [
+        {
+          barang_id: 'brg-15',
+          nama_barang: 'Mie Instan Goreng',
+          jumlah_masuk: 40,
+          harga_beli_satuan: 2850,
+          satuan: 'bungkus',
+        },
+      ],
+    },
+    {
+      id: 'klr-seed-3',
+      tanggal: geserTanggal(hariIni, -1),
+      waktu: buatWaktu(-1, '16:15'),
+      jumlah: 22000,
+      kategori: 'Gas/Listrik/Air',
+      keterangan: 'Isi ulang gas LPG 3 kg untuk masak gado-gado',
+      dicatat_oleh: 'Tante Meli',
+    },
+    {
+      id: 'klr-seed-4',
+      tanggal: hariIni,
+      waktu: buatWaktu(0, '06:45'),
+      jumlah: 45000,
+      kategori: 'Bahan Gado-gado',
+      keterangan: 'Sayuran segar pasar pagi untuk gado-gado hari ini',
+      dicatat_oleh: 'Nek Upik',
+    },
+  ];
+
+  // Riwayat pergerakan stok contoh
+  const pergerakan_stok: PergerakanStok[] = [
+    {
+      id: 'stk-seed-1',
+      barang_id: 'brg-15',
+      nama_barang: 'Mie Instan Goreng',
+      tanggal_waktu: buatWaktu(-3, '11:00'),
+      jenis: 'MASUK',
+      jumlah: 40,
+      stok_sebelum: 3,
+      stok_sesudah: 43,
+      keterangan: 'Belanja stok dari agen (Satri)',
+      oleh: 'Satri',
+    },
+    {
+      id: 'stk-seed-2',
+      barang_id: 'brg-15',
+      nama_barang: 'Mie Instan Goreng',
+      tanggal_waktu: buatWaktu(0, '10:35'),
+      jenis: 'KELUAR',
+      jumlah: -4,
+      stok_sebelum: 40,
+      stok_sesudah: 36,
+      keterangan: `Penjualan TRX-${hariIni.replace(/-/g, '')}-0002`,
+      oleh: 'Tante Meli',
+    },
+    {
+      id: 'stk-seed-3',
+      barang_id: 'brg-06',
+      nama_barang: 'Air Galon Isi Ulang',
+      tanggal_waktu: buatWaktu(0, '10:35'),
+      jenis: 'KELUAR',
+      jumlah: -2,
+      stok_sebelum: 13,
+      stok_sesudah: 11,
+      keterangan: `Penjualan TRX-${hariIni.replace(/-/g, '')}-0002`,
+      oleh: 'Tante Meli',
+    },
+  ];
+
+  return {
+    barang,
+    transaksi,
+    pemasukan,
+    pengeluaran,
+    pergerakan_stok,
+    keranjang_tersimpan: [],
+    pengaturan: buatPengaturanDefault(),
+  };
+}

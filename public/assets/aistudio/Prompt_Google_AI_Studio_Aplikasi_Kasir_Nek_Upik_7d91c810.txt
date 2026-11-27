@@ -1,0 +1,215 @@
+=====================================================================
+PROMPT UNTUK GOOGLE AI STUDIO (BUILD MODE)
+Aplikasi Kasir Digital - Toko Kelontong Nek Upik
+=====================================================================
+Cara pakai: salin SEMUA teks di bawah garis "MULAI PROMPT" sampai
+"AKHIR PROMPT", tempel ke kolom prompt Build di Google AI Studio.
+Kalau hasilnya kurang, lanjutkan dengan prompt perbaikan di bagian
+paling bawah file ini (satu per satu, jangan sekaligus).
+
+------------------------- MULAI PROMPT -------------------------
+
+Kamu adalah senior full-stack developer dan UX designer. Buatkan aplikasi web kasir digital yang lengkap, siap dipakai, dan mudah digunakan oleh orang yang tidak terbiasa dengan aplikasi bisnis. Seluruh tampilan, label, tombol, dan pesan WAJIB dalam Bahasa Indonesia yang sederhana.
+
+## 1. LATAR BELAKANG DAN MASALAH
+
+Aplikasi ini dibuat untuk UMKM "Toko Kelontong Nek Upik" di Jl. H. Ali Hamzah No. 2, Payo Lebar, Kec. Jelutung, Kota Jambi. Usaha ini gabungan toko kelontong dan kuliner rumahan: menjual kebutuhan sehari-hari, gado-gado, jajanan/makanan ringan kemasan, minuman kemasan (disimpan di lemari pendingin), sayuran/bahan makanan, galon air, dan barang kebutuhan rumah tangga.
+
+Kondisi SEBELUM aplikasi (As-Is):
+- Transaksi, pemasukan, dan pengeluaran dicatat di buku tulis.
+- Stok dicek langsung ke rak/lemari, tidak ada data stok.
+- Pembayaran hanya tunai.
+- Rekap keuangan dihitung manual dari buku; mencari riwayat transaksi lambat; buku bisa hilang/rusak tanpa cadangan.
+- Barang sangat banyak jenisnya dan berukuran kecil (permen, sachet jajanan, sabun, dll.), sehingga stok manual sulit.
+
+Pengguna (3 pengelola):
+- Nek Upik = Pemilik: melihat dashboard dan laporan, mengawasi.
+- Tante Meli = Kasir/operasional: melayani pelanggan, mencatat penjualan, memeriksa pembayaran QRIS.
+- Satri = Pengadaan: mencatat belanja barang dari pemasok dan menambah stok.
+Pengguna kebanyakan membuka aplikasi di HP (layar kecil) saat melayani pelanggan, jadi harus cepat dan minim langkah.
+
+## 2. TUJUAN APLIKASI
+
+1. Mengganti buku tulis dengan pencatatan transaksi digital yang terstruktur.
+2. Mencatat pemasukan dan pengeluaran otomatis maupun manual.
+3. Memantau stok barang dan memberi peringatan stok menipis.
+4. Mendukung pembayaran Tunai dan QRIS.
+5. Menyediakan laporan harian/mingguan/bulanan yang mudah dibaca pemilik.
+6. Data aman: tersimpan di perangkat dan bisa dicadangkan (backup) lalu dipulihkan (restore).
+
+## 3. PRINSIP DESAIN (WAJIB DIIKUTI)
+
+- Mobile-first (lebar 360-430 px), tetap rapi di tablet dan laptop.
+- Tombol besar (minimal tinggi 48 px), huruf jelas (minimal 16 px), kontras tinggi. Pengguna mungkin lanjut usia.
+- Navigasi bawah (bottom navigation) dengan 5 menu utama: Kasir, Barang, Keuangan, Laporan, Lainnya.
+- Warna tenang dan hangat (hijau atau biru lembut sebagai warna utama), tampilan bersih, tidak ramai.
+- Semua angka uang diformat Rupiah Indonesia, contoh: Rp 12.500 (pemisah titik).
+- Tanggal format Indonesia: 27 November 2026, zona waktu WIB (Asia/Jakarta).
+- Setiap aksi penting (hapus, reset data) minta konfirmasi. Beri pesan sukses/gagal yang jelas (toast).
+- Sediakan keadaan kosong (empty state), loading, dan pesan error yang ramah di setiap halaman.
+- Jangan membuat halaman yang rumit. Satu layar = satu tugas.
+
+## 4. FITUR DAN MENU (LENGKAP)
+
+### 4.1 Dashboard (halaman awal)
+- Ringkasan HARI INI: total penjualan, jumlah transaksi, total pemasukan, total pengeluaran, laba kasar sederhana (pemasukan - pengeluaran).
+- Pemasukan per metode bayar hari ini: Tunai vs QRIS.
+- Daftar peringatan "Stok Menipis" (stok <= batas minimum).
+- 5 barang terlaris minggu ini.
+- Grafik batang pemasukan 7 hari terakhir.
+- Tombol pintas besar: "Transaksi Baru", "Catat Pengeluaran", "Tambah Stok".
+
+### 4.2 Data Barang
+- Daftar barang dengan pencarian (cari nama), filter kategori, dan urut nama/stok.
+- Tambah/ubah/hapus barang. Field: nama barang, kategori, harga jual, harga beli (modal), stok saat ini, satuan (pcs, bungkus, botol, porsi, galon, kg, ikat), batas stok minimum, foto opsional (upload kecil), aktif/nonaktif.
+- Kategori awal: Makanan Berat (gado-gado), Jajanan & Makanan Ringan, Minuman Kemasan, Sayur & Bahan Makanan, Kebutuhan Rumah Tangga, Kebutuhan Harian Lain.
+- Barang jenis "Porsi" (misal gado-gado) boleh stok tidak dibatasi: sediakan opsi "Tidak lacak stok".
+- Tombol cepat "+ Barang" mudah dijangkau. Validasi: nama wajib, harga angka >= 0.
+- Impor barang dari file CSV (kolom: nama, kategori, harga_jual, harga_beli, stok, satuan, stok_minimum) dan ekspor ke CSV, karena jumlah barang banyak.
+
+### 4.3 Kasir / Transaksi Penjualan (fitur terpenting, harus sangat cepat)
+- Tampilan grid/daftar barang dengan pencarian cepat dan filter kategori. Ketuk barang = masuk keranjang. Tombol + dan - untuk jumlah.
+- Keranjang menampilkan item, jumlah, harga, subtotal, dan total. Opsi diskon nominal (Rp) per transaksi dan catatan singkat (misal nama pelanggan/ngutang).
+- Cegah penjualan melebihi stok (untuk barang yang melacak stok), dengan pesan jelas.
+- Pilihan metode bayar: TUNAI atau QRIS.
+  * TUNAI: input uang diterima (sediakan tombol cepat: Uang Pas, 5.000, 10.000, 20.000, 50.000, 100.000), hitung kembalian otomatis, cegah jika uang kurang.
+  * QRIS: tampilkan gambar kode QRIS toko (diunggah di menu Pengaturan) beserta total yang harus dibayar. Pengelola memeriksa notifikasi di HP, lalu menekan "Pembayaran Sudah Diterima" untuk menyelesaikan. (Catatan: aplikasi TIDAK terhubung ke payment gateway; verifikasi dilakukan manual oleh pengelola. Tulis pengingat: "Pastikan notifikasi pembayaran sudah masuk sebelum menyerahkan barang".)
+- Setelah transaksi selesai: stok otomatis berkurang, pemasukan otomatis tercatat, dan muncul struk digital ringkas (nomor transaksi, tanggal-jam, item, total, metode, kembalian, nama kasir) dengan tombol "Cetak/Simpan PDF" dan "Bagikan" (Web Share API bila tersedia).
+- Transaksi bisa DIBATALKAN (void) oleh Pemilik dengan alasan wajib; stok dikembalikan dan pemasukan dikoreksi. Jangan menghapus data, cukup tandai "Dibatalkan".
+- Fitur "Simpan Sementara" (hold) agar satu keranjang bisa ditunda saat melayani pelanggan lain.
+- Nomor transaksi otomatis format: TRX-YYYYMMDD-0001.
+
+### 4.4 Pemasukan
+- Daftar semua pemasukan: otomatis dari penjualan + pemasukan manual (misal setoran lain). Filter tanggal, metode, sumber.
+- Form pemasukan manual: tanggal, jumlah, sumber/keterangan, metode.
+
+### 4.5 Pengeluaran
+- Catat pengeluaran: tanggal, jumlah, kategori (Belanja Barang/Stok, Gas/Listrik/Air, Bahan Gado-gado, Kemasan, Transportasi, Gaji/Bantuan, Lainnya), keterangan, dicatat oleh siapa, foto nota opsional.
+- Jika kategori "Belanja Barang/Stok": sediakan pilihan menambah stok sekaligus (pilih barang, jumlah masuk, harga beli per satuan) sehingga stok bertambah otomatis dan harga beli terbarui. Ini dipakai Satri (pengadaan).
+- Filter tanggal dan kategori, edit, dan hapus (dengan konfirmasi dan jejak perubahan).
+
+### 4.6 Stok Barang
+- Daftar stok dengan indikator warna: aman (hijau), menipis (kuning), habis (merah).
+- Tambah stok (barang masuk dari pemasok) dan Penyesuaian stok (koreksi/stok opname) dengan alasan (rusak, hilang, kadaluarsa, selisih hitung).
+- Riwayat pergerakan stok per barang (masuk, keluar karena penjualan, penyesuaian, pembatalan) lengkap tanggal dan pelaku.
+- Daftar "Perlu Belanja" otomatis dari barang di bawah stok minimum, bisa dibagikan sebagai teks (untuk Satri) dengan format sederhana ke WhatsApp (tombol "Kirim ke WhatsApp" membuka link wa.me dengan teks daftar).
+
+### 4.7 Laporan
+- Pilih periode: Hari ini, Kemarin, 7 hari, Bulan ini, Bulan lalu, Rentang tanggal kustom.
+- Ringkasan: total penjualan, jumlah transaksi, rata-rata nilai transaksi, total pemasukan, total pengeluaran, selisih (laba kasar), rincian Tunai vs QRIS, rincian pengeluaran per kategori.
+- Tabel barang terlaris (jumlah terjual dan omzet) dan barang kurang laku.
+- Grafik: tren penjualan harian, perbandingan Tunai vs QRIS (pie/donut), pengeluaran per kategori.
+- Daftar riwayat transaksi yang bisa dicari, dibuka detailnya, dan difilter (termasuk yang dibatalkan).
+- Ekspor laporan ke CSV dan cetak/simpan PDF (print stylesheet rapi).
+
+### 4.8 QRIS
+- Halaman/menu QRIS: tampilkan gambar QRIS toko dengan ukuran besar dan nama usaha, tombol "Layar Penuh" agar mudah dipindai pelanggan.
+- Di Pengaturan: unggah/ganti gambar QRIS, isi nama merchant. Tampilkan statistik jumlah dan total transaksi QRIS pada periode terpilih.
+
+### 4.9 Pengaturan dan Lainnya
+- Profil usaha: nama toko, alamat, nomor HP, pesan di struk.
+- Pengguna: 3 profil (Nek Upik/Pemilik, Tante Meli/Kasir, Satri/Pengadaan) dengan PIN 4 angka sederhana. Pilih profil saat membuka aplikasi. Hak akses:
+  * Pemilik: semua menu, pembatalan transaksi, laporan, pengaturan, backup.
+  * Kasir: Kasir, lihat barang dan stok, catat pengeluaran kecil; tidak bisa membatalkan transaksi atau mengubah pengaturan.
+  * Pengadaan: Barang, Stok, Pengeluaran belanja; tidak melihat laporan keuangan lengkap.
+  Setiap data mencatat siapa yang membuatnya.
+- Backup dan Restore: tombol "Cadangkan Data" (unduh file JSON berisi seluruh data) dan "Pulihkan Data" (unggah file JSON dengan validasi dan konfirmasi). Tampilkan tanggal backup terakhir dan pengingat jika sudah lebih dari 7 hari belum backup.
+- Reset data demo (hanya Pemilik, dengan konfirmasi ganda).
+- Mode gelap opsional dan ukuran huruf (Normal/Besar).
+- Halaman "Panduan Singkat" 5 langkah cara memakai aplikasi, bahasa sangat sederhana.
+
+## 5. MODEL DATA (rancang dengan rapi)
+
+- barang: id, nama, kategori, harga_jual, harga_beli, stok, satuan, stok_minimum, lacak_stok (boolean), aktif, foto, dibuat_pada.
+- transaksi: id, nomor, tanggal_waktu, item[] (barang_id, nama, harga, jumlah, subtotal), diskon, total, metode (TUNAI/QRIS), uang_diterima, kembalian, catatan, status (SELESAI/DIBATALKAN), alasan_batal, kasir.
+- pemasukan: id, tanggal, jumlah, sumber (PENJUALAN/MANUAL), keterangan, metode, transaksi_id (opsional), dicatat_oleh.
+- pengeluaran: id, tanggal, jumlah, kategori, keterangan, foto_nota, dicatat_oleh, terkait_stok (opsional).
+- pergerakan_stok: id, barang_id, tanggal_waktu, jenis (MASUK/KELUAR/PENYESUAIAN/PEMBATALAN), jumlah, stok_sebelum, stok_sesudah, keterangan, oleh.
+- pengaturan: profil usaha, gambar QRIS, PIN, preferensi tampilan, tanggal backup terakhir.
+Pastikan konsistensi: penjualan -> kurangi stok + buat pemasukan; pembatalan -> kembalikan stok + tandai pemasukan batal; belanja stok -> tambah stok + buat pengeluaran. Gunakan satu fungsi/transaksi logika agar tidak ada data setengah tersimpan.
+
+## 6. PENYIMPANAN DATA
+
+- Gunakan penyimpanan lokal di browser yang andal (IndexedDB atau localStorage dengan abstraksi layer data yang rapi) supaya data tetap ada walau halaman ditutup.
+- Pisahkan lapisan data (repository/service) dari komponen UI agar nanti mudah diganti ke database online (misal Firebase/Supabase).
+- Buat aplikasi bekerja OFFLINE untuk fungsi inti (kasir, stok, pengeluaran), karena internet toko belum tentu stabil. Jika memungkinkan jadikan PWA (bisa "Tambahkan ke Layar Utama").
+- Tampilkan peringatan jelas bahwa data tersimpan di perangkat ini dan harus rutin di-backup.
+
+## 7. DATA CONTOH (SEED) UNTUK DEMO
+
+Isi data awal realistis (bisa dihapus lewat Reset): minimal 30 barang, misalnya: Gado-gado (porsi, tidak lacak stok), Es Teh Kemasan, Air Mineral Botol, Air Galon Isi Ulang, Teh Botol, Minuman Sachet, Keripik Kentang, Kerupuk, Permen (per bungkus), Wafer, Biskuit, Mie Instan, Telur, Beras 1 kg (jika dijual), Gula, Minyak Goreng, Sabun Cuci Piring, Sabun Mandi, Sampo Sachet, Pasta Gigi, Sayur (kangkung/bayam ikat), Cabai, Bawang, Tahu/Tempe, Korek Api, Plastik Kresek, dsb. Beri harga jual dan beli yang masuk akal (rupiah), stok awal beragam termasuk beberapa yang menipis agar peringatan terlihat. Sertakan 10-15 transaksi contoh beberapa hari terakhir agar grafik dan laporan tidak kosong. Tandai jelas bahwa ini DATA CONTOH.
+
+## 8. TEKNOLOGI DAN KUALITAS KODE
+
+- Web app responsif (React + TypeScript + Tailwind CSS direkomendasikan), komponen terpisah dan rapi, state management sederhana.
+- Gunakan library ringan untuk grafik (misal Recharts) dan ikon (misal lucide-react).
+- Hindari ketergantungan berat. Kinerja harus lancar di HP kelas menengah dan pencarian barang instan walau ribuan item.
+- Validasi semua input, tangani error, hindari crash saat data kosong.
+- Aksesibilitas: label form jelas, fokus keyboard, kontras warna cukup.
+- Kode diberi komentar singkat berbahasa Indonesia pada bagian logika penting (hitung total, kembalian, stok).
+
+## 9. BATASAN (JANGAN LAKUKAN)
+
+- Jangan menambah fitur rumit di luar daftar (tanpa marketplace, tanpa akuntansi lengkap, tanpa pajak).
+- Jangan mengklaim terhubung ke bank/QRIS asli; verifikasi QRIS manual oleh pengelola.
+- Jangan memakai bahasa Inggris pada antarmuka.
+- Jangan menaruh kunci API atau data sensitif di kode.
+
+## 10. URUTAN PENGERJAAN YANG DIHARAPKAN
+
+1. Kerangka aplikasi, navigasi, tema, dan lapisan data.
+2. Data Barang + seed data.
+3. Kasir (keranjang, Tunai, QRIS, struk) + pengurangan stok + pemasukan otomatis.
+4. Pengeluaran + penambahan stok + Stok Barang.
+5. Dashboard dan Laporan beserta grafik dan ekspor.
+6. Pengaturan, profil/PIN, QRIS, Backup/Restore.
+7. Poles UI, empty state, validasi, panduan singkat, uji alur lengkap.
+
+## 11. KRITERIA KEBERHASILAN (HARUS BISA DIUJI)
+
+- Dalam <= 5 ketukan, kasir dapat menyelesaikan satu transaksi tunai sederhana.
+- Total, kembalian, stok, dan pemasukan selalu konsisten setelah penjualan, pembatalan, dan belanja stok.
+- Data tetap ada setelah halaman di-refresh; backup dan restore berfungsi dan menghasilkan data yang sama.
+- Laporan harian cocok dengan jumlah transaksi dan pengeluaran yang dicatat.
+- Peringatan stok menipis muncul benar.
+- Semua teks Bahasa Indonesia dan semua uang berformat Rupiah.
+- Tampilan nyaman di layar HP 360 px tanpa scroll horizontal.
+
+Setelah selesai membangun, jelaskan singkat: (a) fitur yang sudah jadi, (b) cara menguji alur utama, (c) keterbatasan yang masih ada.
+
+------------------------- AKHIR PROMPT -------------------------
+
+
+=====================================================================
+PROMPT LANJUTAN (pakai satu per satu setelah hasil pertama muncul)
+=====================================================================
+
+[Perbaikan tampilan HP]
+"Periksa seluruh halaman pada lebar 360 px. Perbaiki teks terpotong, tombol terlalu kecil, dan scroll horizontal. Pastikan navigasi bawah tidak menutupi konten."
+
+[Perbaikan konsistensi data]
+"Uji alur ini dan perbaiki jika ada selisih: (1) jual 3 barang tunai, (2) cek stok berkurang dan pemasukan bertambah, (3) batalkan transaksi, (4) cek stok kembali dan pemasukan terkoreksi, (5) belanja stok lewat Pengeluaran, (6) cek stok dan pengeluaran. Tampilkan hasil uji."
+
+[Kecepatan kasir]
+"Percepat halaman Kasir: pencarian instan, barang yang sering dibeli muncul di atas, dan tombol 'Uang Pas' selalu terlihat. Kurangi jumlah ketukan per transaksi."
+
+[Laporan]
+"Tambahkan laporan bulanan yang bisa dicetak/PDF dengan kop nama toko, periode, ringkasan pemasukan-pengeluaran, Tunai vs QRIS, dan 10 barang terlaris."
+
+[Persiapan dokumentasi laporan kuliah]
+"Buat halaman 'Tentang Aplikasi' yang menampilkan daftar fitur dan versi. Pastikan setiap menu punya judul jelas agar mudah di-screenshot untuk dokumentasi: Dashboard, Data Barang, Transaksi Penjualan, Pemasukan, Pengeluaran, Stok Barang, Laporan, QRIS."
+
+[Migrasi ke database online (opsional, nanti)]
+"Ubah lapisan data dari penyimpanan lokal menjadi Firebase Firestore agar data bisa diakses dari beberapa HP (Nek Upik, Tante Meli, Satri), tanpa mengubah antarmuka. Sertakan login sederhana dan aturan keamanan dasar."
+
+=====================================================================
+TIPS
+=====================================================================
+1. Setelah aplikasi jadi, ambil screenshot tiap menu untuk Gambar 18-20
+   di Bab XI laporan (Dashboard, Transaksi, Pemasukan/Pengeluaran, Stok).
+2. Ganti data contoh dengan barang asli toko sebelum dites bersama
+   pengelola. Catat hasil ujinya di tabel 8.4 laporan.
+3. Jalankan "Backup" setelah tiap sesi uji supaya data tidak hilang.
+4. Jangan tulis di laporan bahwa aplikasi "meningkatkan penjualan"
+   sebelum ada data pengujian nyata.
+=====================================================================
