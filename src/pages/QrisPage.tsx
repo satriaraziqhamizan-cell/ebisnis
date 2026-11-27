@@ -76,8 +76,8 @@ export const QrisPage: React.FC<QrisPageProps> = ({
           {data.pengaturan.gambar_qris ? (
             <img
               src={data.pengaturan.gambar_qris}
-              alt="Kode QRIS Toko"
-              className="w-64 h-64 sm:w-72 sm:h-72 object-contain rounded-2xl border border-slate-200 bg-white p-3"
+              alt="Kode QRIS Warung Nek Upik"
+              className="w-64 sm:w-72 max-h-96 object-contain rounded-2xl border border-slate-200 bg-white p-2"
             />
           ) : (
             <div className="w-64 h-64 rounded-2xl border border-dashed border-slate-300 flex items-center justify-center p-4 text-slate-500">
@@ -169,7 +169,7 @@ export const QrisPage: React.FC<QrisPageProps> = ({
             <img
               src={data.pengaturan.gambar_qris}
               alt="QRIS Layar Penuh"
-              className="mt-6 w-80 h-80 max-w-[90vw] max-h-[60vh] object-contain border border-slate-200 rounded-2xl p-3"
+              className="mt-4 max-w-[92vw] max-h-[70vh] w-auto object-contain border border-slate-200 rounded-2xl p-2 bg-white"
             />
           )}
 

@@ -1,4 +1,4 @@
-import { buatDataContoh, buatPengaturanDefault } from '../data/seedData';
+import { buatDataContoh, buatPengaturanDefault, DEFAULT_QRIS_IMAGE } from '../data/seedData';
 import { AppData } from '../types/pos';
 
 const DB_NAME = 'kasir_nek_upik_db';
@@ -76,12 +76,33 @@ function normalkanData(raw: Partial<AppData>): AppData {
     barang: Array.isArray(raw.barang) ? raw.barang : [],
     transaksi: Array.isArray(raw.transaksi) ? raw.transaksi : [],
     pemasukan: Array.isArray(raw.pemasukan) ? raw.pemasukan : [],
-    pengeluaran: Array.isArray(raw.pengeluaran) ? raw.pengeluaran : [],
-    pergerakan_stok: Array.isArray(raw.pergerakan_stok) ? raw.pergerakan_stok : [],
+    pengeluaran: Array.isArray(raw.pengeluaran)
+      ? raw.pengeluaran.map((p) =>
+          p.dicatat_oleh === 'Satri' ? { ...p, dicatat_oleh: 'Satria' } : p
+        )
+      : [],
+    pergerakan_stok: Array.isArray(raw.pergerakan_stok)
+      ? raw.pergerakan_stok.map((s) => ({
+          ...s,
+          oleh: s.oleh === 'Satri' ? 'Satria' : s.oleh,
+          keterangan: s.keterangan.replace('(Satri)', '(Satria)'),
+        }))
+      : [],
     keranjang_tersimpan: Array.isArray(raw.keranjang_tersimpan) ? raw.keranjang_tersimpan : [],
     pengaturan: {
       ...defaultSet,
       ...(raw.pengaturan ?? {}),
+      gambar_qris:
+        !raw.pengaturan?.gambar_qris ||
+        raw.pengaturan.gambar_qris.startsWith('data:image/svg+xml') ||
+        raw.pengaturan.gambar_qris === '/assets/aistudio/image_99f40a23.png'
+          ? DEFAULT_QRIS_IMAGE
+          : raw.pengaturan.gambar_qris,
+      nama_merchant_qris:
+        !raw.pengaturan?.nama_merchant_qris ||
+        raw.pengaturan.nama_merchant_qris === 'TOKO KELONTONG NEK UPIK - JAMBI'
+          ? defaultSet.nama_merchant_qris
+          : raw.pengaturan.nama_merchant_qris,
       profil_usaha: {
         ...defaultSet.profil_usaha,
         ...(raw.pengaturan?.profil_usaha ?? {}),

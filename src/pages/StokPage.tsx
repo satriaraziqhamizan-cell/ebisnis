@@ -281,7 +281,7 @@ export const StokPage: React.FC<StokPageProps> = ({
             <>
               <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p className="text-base font-medium text-slate-700 dark:text-slate-300">
-                  Bagikan daftar belanja ini ke Satri atau grup keluarga lewat WhatsApp.
+                  Bagikan daftar belanja ini ke Satria atau grup keluarga lewat WhatsApp.
                 </p>
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button

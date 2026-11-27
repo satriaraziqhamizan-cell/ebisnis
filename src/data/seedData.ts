@@ -9,40 +9,8 @@ import {
 } from '../types/pos';
 import { geserTanggal, getTanggalWIB } from '../utils/format';
 
-// QRIS Contoh (SVG lokal beresolusi tajam sebagai gambar awal sebelum pemilik mengunggah QRIS asli toko)
-export const DEMO_QRIS_SVG_DATA_URL = (() => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" width="280" height="280">
-  <rect width="280" height="280" fill="#ffffff"/>
-  <rect x="16" y="16" width="248" height="248" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
-  <rect x="30" y="30" width="60" height="60" rx="6" fill="#0f172a"/>
-  <rect x="38" y="38" width="44" height="44" rx="3" fill="#ffffff"/>
-  <rect x="46" y="46" width="28" height="28" rx="2" fill="#0f172a"/>
-  <rect x="190" y="30" width="60" height="60" rx="6" fill="#0f172a"/>
-  <rect x="198" y="38" width="44" height="44" rx="3" fill="#ffffff"/>
-  <rect x="206" y="46" width="28" height="28" rx="2" fill="#0f172a"/>
-  <rect x="30" y="190" width="60" height="60" rx="6" fill="#0f172a"/>
-  <rect x="38" y="198" width="44" height="44" rx="3" fill="#ffffff"/>
-  <rect x="46" y="206" width="28" height="28" rx="2" fill="#0f172a"/>
-  <g fill="#0f172a">
-    <rect x="104" y="34" width="12" height="12"/><rect x="128" y="34" width="12" height="12"/><rect x="152" y="34" width="24" height="12"/>
-    <rect x="104" y="54" width="24" height="12"/><rect x="140" y="54" width="12" height="24"/><rect x="164" y="54" width="12" height="12"/>
-    <rect x="104" y="78" width="12" height="12"/><rect x="128" y="78" width="36" height="12"/>
-    <rect x="34" y="104" width="12" height="24"/><rect x="58" y="104" width="24" height="12"/><rect x="94" y="104" width="12" height="12"/>
-    <rect x="120" y="104" width="40" height="40" rx="6" fill="#15803d"/>
-    <rect x="128" y="112" width="24" height="24" rx="3" fill="#ffffff"/>
-    <rect x="134" y="118" width="12" height="12" fill="#15803d"/>
-    <rect x="172" y="104" width="24" height="12"/><rect x="208" y="104" width="12" height="36"/><rect x="232" y="104" width="12" height="12"/>
-    <rect x="34" y="140" width="36" height="12"/><rect x="82" y="128" width="24" height="12"/><rect x="172" y="128" width="12" height="24"/>
-    <rect x="196" y="140" width="36" height="12"/><rect x="46" y="164" width="24" height="12"/><rect x="82" y="152" width="12" height="24"/>
-    <rect x="106" y="156" width="24" height="12"/><rect x="142" y="156" width="36" height="12"/><rect x="190" y="164" width="24" height="12"/><rect x="226" y="152" width="18" height="24"/>
-    <rect x="104" y="190" width="12" height="24"/><rect x="128" y="190" width="24" height="12"/><rect x="164" y="190" width="12" height="36"/>
-    <rect x="190" y="190" width="36" height="12"/><rect x="238" y="190" width="12" height="24"/>
-    <rect x="104" y="226" width="36" height="12"/><rect x="152" y="214" width="24" height="24"/><rect x="190" y="214" width="12" height="24"/>
-    <rect x="214" y="214" width="36" height="12"/><rect x="214" y="238" width="24" height="12"/>
-  </g>
-</svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-})();
+// Gambar QRIS resmi Warung nek upik, Sembako
+export const DEFAULT_QRIS_IMAGE = '/assets/aistudio/image_1fb85cc2.png';
 
 export function buatPengaturanDefault(): Pengaturan {
   return {
@@ -52,8 +20,8 @@ export function buatPengaturanDefault(): Pengaturan {
       telepon: '0812-7400-1988',
       pesan_struk: 'Terima kasih sudah berbelanja di Toko Nek Upik. Semoga sehat & lancar rezeki.',
     },
-    gambar_qris: DEMO_QRIS_SVG_DATA_URL,
-    nama_merchant_qris: 'TOKO KELONTONG NEK UPIK - JAMBI',
+    gambar_qris: DEFAULT_QRIS_IMAGE,
+    nama_merchant_qris: 'Warung nek upik, Sembako · NMID ID1026649284043',
     pin_pengguna: {
       pemilik: '1234',
       kasir: '2222',
@@ -624,7 +592,7 @@ export function buatDataContoh(): AppData {
       jumlah: 114000,
       kategori: 'Belanja Barang/Stok',
       keterangan: 'Kulakan Mie Instan Goreng 1 dus (40 bungkus)',
-      dicatat_oleh: 'Satri',
+      dicatat_oleh: 'Satria',
       terkait_stok: [
         {
           barang_id: 'brg-15',
@@ -666,8 +634,8 @@ export function buatDataContoh(): AppData {
       jumlah: 40,
       stok_sebelum: 3,
       stok_sesudah: 43,
-      keterangan: 'Belanja stok dari agen (Satri)',
-      oleh: 'Satri',
+      keterangan: 'Belanja stok dari agen (Satria)',
+      oleh: 'Satria',
     },
     {
       id: 'stk-seed-2',

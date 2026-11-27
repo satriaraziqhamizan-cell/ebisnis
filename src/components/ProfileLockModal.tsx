@@ -108,7 +108,7 @@ export const ProfileLockModal: React.FC<ProfileLockModalProps> = ({
             })}
 
             <div className="pt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200 dark:border-slate-800">
-              PIN bawaan demo: Nek Upik (<span className="font-mono-num font-semibold">1234</span>) · Tante Meli (<span className="font-mono-num font-semibold">2222</span>) · Satri (<span className="font-mono-num font-semibold">3333</span>). Bisa diubah di Pengaturan.
+              PIN bawaan demo: Nek Upik (<span className="font-mono-num font-semibold">1234</span>) · Tante Meli (<span className="font-mono-num font-semibold">2222</span>) · Satria (<span className="font-mono-num font-semibold">3333</span>). Bisa diubah di Pengaturan.
             </div>
 
             {bisaTutup && onTutup && (

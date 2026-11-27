@@ -245,7 +245,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
         </div>
       ) : (
-        /* Ringkasan Khusus Pengadaan (Satri) */
+        /* Ringkasan Khusus Pengadaan (Satria) */
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">

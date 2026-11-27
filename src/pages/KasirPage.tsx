@@ -469,8 +469,8 @@ export const KasirPage: React.FC<KasirPageProps> = ({
                   {data.pengaturan.gambar_qris ? (
                     <img
                       src={data.pengaturan.gambar_qris}
-                      alt="Kode QRIS Toko Kelontong Nek Upik"
-                      className="w-48 h-48 object-contain rounded-xl border border-slate-200 bg-white p-2"
+                      alt="Kode QRIS Warung Nek Upik"
+                      className="w-56 max-h-72 object-contain rounded-xl border border-slate-200 bg-white p-1.5"
                     />
                   ) : (
                     <div className="w-48 h-48 rounded-xl border border-dashed border-slate-300 flex items-center justify-center text-sm text-slate-500 p-4">

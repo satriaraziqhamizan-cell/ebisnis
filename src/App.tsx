@@ -158,7 +158,7 @@ export default function App() {
     if (peran === 'kasir') {
       return target !== 'laporan';
     }
-    // pengadaan (Satri)
+    // pengadaan (Satria)
     return !['kasir', 'laporan', 'qris'].includes(target);
   };
 

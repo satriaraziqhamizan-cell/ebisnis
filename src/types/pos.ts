@@ -22,7 +22,7 @@ export const DAFTAR_PROFIL: ProfilPengguna[] = [
   },
   {
     id: 'pengadaan',
-    nama: 'Satri',
+    nama: 'Satria',
     jabatan: 'Pengadaan & Stok',
     deskripsi: 'Kelola data barang, tambah stok masuk, stok opname, dan belanja pemasok.',
   },

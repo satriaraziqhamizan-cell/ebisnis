@@ -12,6 +12,7 @@ import {
   HardDrive,
 } from 'lucide-react';
 import { AppData, Pengaturan, PeranPengguna } from '../types/pos';
+import { DEFAULT_QRIS_IMAGE } from '../data/seedData';
 import { formatTanggalJamWIB, getTanggalWIB, kompresGambarFile, unduhFile } from '../utils/format';
 import { validasiJsonBackup } from '../services/repository';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -308,6 +309,15 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
                 className="hidden"
               />
             </label>
+            {gambarQris !== DEFAULT_QRIS_IMAGE && (
+              <button
+                type="button"
+                onClick={() => setGambarQris(DEFAULT_QRIS_IMAGE)}
+                className="min-h-[48px] px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Pakai QRIS Bawaan Toko
+              </button>
+            )}
           </div>
 
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -336,7 +346,7 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Satri (Pengadaan)</label>
+                <label className="block text-sm font-medium mb-1">Satria (Pengadaan)</label>
                 <input
                   type="text"
                   inputMode="numeric"

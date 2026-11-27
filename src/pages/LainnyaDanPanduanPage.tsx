@@ -161,7 +161,7 @@ export const PanduanPage: React.FC = () => {
     {
       nomor: '4',
       judul: 'Pantau Barang Hampir Habis',
-      isi: 'Di Dashboard atau menu Stok Barang, lihat daftar "Stok Menipis". Gunakan tombol "Kirim ke WhatsApp" di tab Perlu Belanja untuk mengirim daftar belanja ke Satri.',
+      isi: 'Di Dashboard atau menu Stok Barang, lihat daftar "Stok Menipis". Gunakan tombol "Kirim ke WhatsApp" di tab Perlu Belanja untuk mengirim daftar belanja ke Satria.',
     },
     {
       nomor: '5',
